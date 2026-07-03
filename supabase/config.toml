@@ -1,1 +1,11 @@
 project_id = "povhwwcswvfihmcdqgyv"
+
+# QR pairing edge functions.
+# issue-qr-token requires a valid Supabase JWT (verify_jwt = true).
+# redeem-qr-token is called by an UNAUTHENTICATED device (post-scan) so
+# verify_jwt must be false; the function validates the pairing token itself.
+[functions.issue-qr-token]
+verify_jwt = true
+
+[functions.redeem-qr-token]
+verify_jwt = false
