@@ -444,6 +444,14 @@ const Auth = () => {
             )}
             Continue with Apple
           </Button>
+          <Button
+            onClick={() => setShowQrScanner(true)}
+            variant="outline"
+            className="w-full h-12 rounded-xl gap-3 text-sm font-medium"
+          >
+            <QrCode className="h-5 w-5" />
+            Sign in with QR
+          </Button>
         </div>
 
         <div className="flex items-center gap-3">
