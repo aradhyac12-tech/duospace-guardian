@@ -518,6 +518,20 @@ const Auth = () => {
           End-to-end encrypted • Your data stays yours
         </p>
       </motion.div>
+
+      <Dialog open={showQrScanner} onOpenChange={setShowQrScanner}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign in with QR</DialogTitle>
+          </DialogHeader>
+          {showQrScanner && (
+            <QRSignInScanner
+              onClose={() => setShowQrScanner(false)}
+              onSuccess={() => setShowQrScanner(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
