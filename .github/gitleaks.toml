@@ -1,0 +1,21 @@
+title = "DuoSpace gitleaks config"
+
+# Use built-in default ruleset
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Files and patterns intentionally excluded from secret scanning"
+paths = [
+  '''bun\.lock''',
+  '''package-lock\.json''',
+  '''node_modules/''',
+  '''dist/''',
+  '''coverage/''',
+  '''\.env\.example$''',
+]
+
+# Allow Supabase publishable/anon JWT tokens — they are public by design.
+regexes = [
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+''',
+]
