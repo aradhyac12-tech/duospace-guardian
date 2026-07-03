@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import storage from "@/lib/storage";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, QrCode } from "lucide-react";
+import QRSignInScanner from "@/components/auth/QRSignInScanner";
 import { logInfo, logWarn, logError, newTraceId } from "@/lib/telemetry";
 
 // Structured-logging helpers for the auth surface.
