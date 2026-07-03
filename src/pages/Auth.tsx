@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import storage from "@/lib/storage";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, QrCode } from "lucide-react";
+import QRSignInScanner from "@/components/auth/QRSignInScanner";
 import { logInfo, logWarn, logError, newTraceId } from "@/lib/telemetry";
 
 // Structured-logging helpers for the auth surface.
@@ -40,6 +42,7 @@ const Auth = () => {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
+  const [showQrScanner, setShowQrScanner] = useState(false);
   const { toast } = useToast();
 
   // Handle OAuth callback - check for hash fragments or query params indicating a callback
@@ -441,6 +444,14 @@ const Auth = () => {
             )}
             Continue with Apple
           </Button>
+          <Button
+            onClick={() => setShowQrScanner(true)}
+            variant="outline"
+            className="w-full h-12 rounded-xl gap-3 text-sm font-medium"
+          >
+            <QrCode className="h-5 w-5" />
+            Sign in with QR
+          </Button>
         </div>
 
         <div className="flex items-center gap-3">
@@ -507,6 +518,20 @@ const Auth = () => {
           End-to-end encrypted • Your data stays yours
         </p>
       </motion.div>
+
+      <Dialog open={showQrScanner} onOpenChange={setShowQrScanner}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign in with QR</DialogTitle>
+          </DialogHeader>
+          {showQrScanner && (
+            <QRSignInScanner
+              onClose={() => setShowQrScanner(false)}
+              onSuccess={() => setShowQrScanner(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
