@@ -43,6 +43,7 @@ const Auth = () => {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
   const [showQrScanner, setShowQrScanner] = useState(false);
+  const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const { toast } = useToast();
 
   // Handle OAuth callback - check for hash fragments or query params indicating a callback
