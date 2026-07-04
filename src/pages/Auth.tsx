@@ -529,6 +529,20 @@ const Auth = () => {
             <QRSignInScanner
               onClose={() => setShowQrScanner(false)}
               onSuccess={() => setShowQrScanner(false)}
+              onSignupInvite={(inviterId) => {
+                // Signup-invite QR: stash inviter for downstream partner-link
+                // wiring (same key-space as the existing invite flow so the
+                // rest of the app doesn't need to know about QR at all).
+                if (inviterId) {
+                  sessionStorage.setItem("duo-pending-qr-inviter", inviterId);
+                }
+                setAuthTab("signup");
+                setShowQrScanner(false);
+                toast({
+                  title: "Create your account",
+                  description: "Fill in your details to finish signup.",
+                });
+              }}
             />
           )}
         </DialogContent>
