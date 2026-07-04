@@ -169,6 +169,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
+        kind: "session",
         access_token: verifyData.session.access_token,
         refresh_token: verifyData.session.refresh_token,
         expires_at: verifyData.session.expires_at,
