@@ -58,9 +58,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Parse optional body: { token_type?: 'device_pairing' | 'signup_invite' }.
+    // Default to device_pairing so existing callers are unaffected.
+    let tokenType: "device_pairing" | "signup_invite" = "device_pairing";
+    try {
+      const body = await req.json().catch(() => ({}));
+      if (body && typeof body === "object" && typeof (body as Record<string, unknown>).token_type === "string") {
+        const t = (body as { token_type: string }).token_type;
+        if (t === "device_pairing" || t === "signup_invite") tokenType = t;
+      }
+    } catch { /* no body is fine */ }
+
     // Rate-limit issuance per user: 10 tokens per minute is plenty for a
     // legitimate "regenerate QR" loop and shuts down abuse.
-    const allowed = await consumeRateLimit(user.id, "qr-issue", 10, 60);
+    const rlBucket = tokenType === "signup_invite" ? "qr-issue-invite" : "qr-issue";
+    const allowed = await consumeRateLimit(user.id, rlBucket, 10, 60);
     if (!allowed) {
       return new Response(
         JSON.stringify({ error: "Too many QR requests. Try again shortly." }),
@@ -78,7 +90,10 @@ Deno.serve(async (req) => {
     const tokenHash = await sha256Hex(token);
 
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + TOKEN_TTL_SECONDS * 1000);
+    // signup_invite lives longer (10 min) since a new user takes longer to
+    // complete signup than a same-user device pairing (~90s window).
+    const ttlSeconds = tokenType === "signup_invite" ? 600 : TOKEN_TTL_SECONDS;
+    const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
       auth: { persistSession: false },
@@ -91,6 +106,7 @@ Deno.serve(async (req) => {
     const { error: insertErr } = await admin.from("qr_pairing_tokens").insert({
       user_id: user.id,
       token_hash: tokenHash,
+      token_type: tokenType,
       expires_at: expiresAt.toISOString(),
       issuer_ip: issuerIp,
       issuer_ua: issuerUa,
