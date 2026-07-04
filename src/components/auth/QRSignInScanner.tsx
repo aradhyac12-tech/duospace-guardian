@@ -14,6 +14,13 @@ import { logInfo, logError, newTraceId } from "@/lib/telemetry";
 interface QRSignInScannerProps {
   onClose: () => void;
   onSuccess?: () => void;
+  /**
+   * Called when the scanned QR was a signup_invite (not a device_pairing).
+   * The Auth page uses this to switch to the Sign Up tab and stash the
+   * inviter_id so the newly-created account can be linked to the inviter
+   * downstream (partner link, etc). No session is issued in this branch.
+   */
+  onSignupInvite?: (inviterId: string) => void;
 }
 
 interface QRPayload {
@@ -25,7 +32,7 @@ interface QRPayload {
 
 const SCANNER_ID = "duo-qr-scanner-region";
 
-const QRSignInScanner = ({ onClose, onSuccess }: QRSignInScannerProps) => {
+const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScannerProps) => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [status, setStatus] = useState<"starting" | "scanning" | "redeeming" | "error">("starting");
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +115,18 @@ const QRSignInScanner = ({ onClose, onSuccess }: QRSignInScannerProps) => {
         { body: { token: parsed.token } },
       );
       if (fnErr) throw new Error(fnErr.message);
+
+      // Branch on the redeem response.
+      // kind === "signup_invite" → this QR was minted for a new account.
+      //   Route the scanning device into the Sign Up tab; don't set a session.
+      // kind === "session" (or absent, legacy) → normal device pairing.
+      if (data?.kind === "signup_invite") {
+        logInfo("auth.qr", "redeem signup_invite", { request_id: traceId, status: "ok" }, traceId);
+        toast({ title: "Create your account", description: "Finish signup on this device." });
+        onSignupInvite?.(String(data.inviter_id ?? ""));
+        return;
+      }
+
       if (!data?.access_token || !data?.refresh_token) {
         throw new Error("Invalid response");
       }

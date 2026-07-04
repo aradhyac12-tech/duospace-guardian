@@ -43,6 +43,7 @@ const Auth = () => {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
   const [showQrScanner, setShowQrScanner] = useState(false);
+  const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const { toast } = useToast();
 
   // Handle OAuth callback - check for hash fragments or query params indicating a callback
@@ -460,7 +461,7 @@ const Auth = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs value={authTab} onValueChange={(v) => setAuthTab(v as "login" | "signup")} className="w-full">
           <TabsList className="w-full bg-muted/50 rounded-xl h-10">
             <TabsTrigger value="login" className="flex-1 rounded-lg text-xs">Sign In</TabsTrigger>
             <TabsTrigger value="signup" className="flex-1 rounded-lg text-xs">Sign Up</TabsTrigger>
@@ -528,6 +529,20 @@ const Auth = () => {
             <QRSignInScanner
               onClose={() => setShowQrScanner(false)}
               onSuccess={() => setShowQrScanner(false)}
+              onSignupInvite={(inviterId) => {
+                // Signup-invite QR: stash inviter for downstream partner-link
+                // wiring (same key-space as the existing invite flow so the
+                // rest of the app doesn't need to know about QR at all).
+                if (inviterId) {
+                  sessionStorage.setItem("duo-pending-qr-inviter", inviterId);
+                }
+                setAuthTab("signup");
+                setShowQrScanner(false);
+                toast({
+                  title: "Create your account",
+                  description: "Fill in your details to finish signup.",
+                });
+              }}
             />
           )}
         </DialogContent>

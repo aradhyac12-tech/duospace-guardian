@@ -4,7 +4,7 @@ import {
   ChevronLeft, Check, ImageIcon, X, Bell, Fingerprint, Vibrate, Link2, Unlink,
   EyeOff, Copy, Share2, Eye, ChevronRight, Palette, Download, RotateCcw,
   MessageSquare, Upload, Scan, KeyRound, Smartphone, Image,
-  Pencil, Search, UserPlus, Smile,
+  Pencil, Search, UserPlus, Smile, QrCode,
 } from "lucide-react";
 import CodeSurpriseEditor from "@/components/CodeSurpriseEditor";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ import { hashPin } from "@/lib/crypto";
 import BackupManager from "@/components/BackupManager";
 import ThemeStudio from "@/components/ThemeStudio";
 import PeekConfigDialog from "@/components/PeekConfigDialog";
+import QRSignInDisplay from "@/components/auth/QRSignInDisplay";
 
 const presetWallpapers = [
   { id:"w1", style:"linear-gradient(135deg, hsl(28,15%,90%) 0%, hsl(28,20%,82%) 100%)" },
@@ -56,6 +57,8 @@ const Settings = () => {
   const [showPartnerDialog, setShowPartnerDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog]   = useState(false);
   const [showPeekConfig, setShowPeekConfig]       = useState(false);
+  const [showDeviceQr, setShowDeviceQr]           = useState(false);
+  const [showInviteQr, setShowInviteQr]           = useState(false);
   const [inviteCode, setInviteCode]               = useState("");
   const [joinCode, setJoinCode]                   = useState("");
   const [currentPartner, setCurrentPartner]       = useState<string|null>(null);
@@ -413,6 +416,33 @@ const Settings = () => {
             </div>
           )}
         </section>
+
+        {/* Devices — QR sign-in on another device + QR-based signup invite */}
+        {user && (
+          <section hidden={!matches("device qr scan sign in on another new account invite signup pair pairing")}>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2.5 sticky top-[112px] z-10 bg-background/85 backdrop-blur-sm py-1 -mx-1 px-1 rounded">Devices</p>
+            <div className="space-y-2">
+              <button onClick={() => { hapticLight(); setShowDeviceQr(true); }}
+                className="w-full bg-card rounded-2xl border border-border/60 p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
+                <QrCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Sign in on another device</p>
+                  <p className="text-[11px] text-muted-foreground">Show a QR — scan from the Auth screen on your other device</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <button onClick={() => { hapticLight(); setShowInviteQr(true); }}
+                className="w-full bg-card rounded-2xl border border-border/60 p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
+                <UserPlus className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Invite a new user via QR</p>
+                  <p className="text-[11px] text-muted-foreground">Scanning routes them straight to the Sign Up screen</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Username */}
         <section hidden={!matches("username profile handle")}>
@@ -852,6 +882,26 @@ const Settings = () => {
 
       <ThemeStudio open={showThemeStudio} onOpenChange={setShowThemeStudio} />
       <PeekConfigDialog open={showPeekConfig} onClose={() => setShowPeekConfig(false)} />
+
+      <Dialog open={showDeviceQr} onOpenChange={setShowDeviceQr}>
+        <DialogContent className="rounded-2xl max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle className="text-base">Sign in on another device</DialogTitle>
+            <DialogDescription>Open the Auth screen on your other device, tap “Sign in with QR”, and scan this code.</DialogDescription>
+          </DialogHeader>
+          {showDeviceQr && <QRSignInDisplay mode="device_pairing" onClose={() => setShowDeviceQr(false)} />}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showInviteQr} onOpenChange={setShowInviteQr}>
+        <DialogContent className="rounded-2xl max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle className="text-base">Invite a new user</DialogTitle>
+            <DialogDescription>They open the Auth screen, tap “Sign in with QR”, scan this — they’ll land on the Sign Up form.</DialogDescription>
+          </DialogHeader>
+          {showInviteQr && <QRSignInDisplay mode="signup_invite" onClose={() => setShowInviteQr(false)} />}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
