@@ -115,6 +115,18 @@ const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScanner
         { body: { token: parsed.token } },
       );
       if (fnErr) throw new Error(fnErr.message);
+
+      // Branch on the redeem response.
+      // kind === "signup_invite" → this QR was minted for a new account.
+      //   Route the scanning device into the Sign Up tab; don't set a session.
+      // kind === "session" (or absent, legacy) → normal device pairing.
+      if (data?.kind === "signup_invite") {
+        logInfo("auth.qr", "redeem signup_invite", { request_id: traceId, status: "ok" }, traceId);
+        toast({ title: "Create your account", description: "Finish signup on this device." });
+        onSignupInvite?.(String(data.inviter_id ?? ""));
+        return;
+      }
+
       if (!data?.access_token || !data?.refresh_token) {
         throw new Error("Invalid response");
       }
