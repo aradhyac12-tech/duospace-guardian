@@ -125,8 +125,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         token,
+        token_type: tokenType,
         expires_at: expiresAt.toISOString(),
-        ttl_seconds: TOKEN_TTL_SECONDS,
+        ttl_seconds: ttlSeconds,
       }),
       {
         status: 200,
