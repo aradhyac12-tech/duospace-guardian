@@ -4,7 +4,7 @@ import {
   ChevronLeft, Check, ImageIcon, X, Bell, Fingerprint, Vibrate, Link2, Unlink,
   EyeOff, Copy, Share2, Eye, ChevronRight, Palette, Download, RotateCcw,
   MessageSquare, Upload, Scan, KeyRound, Smartphone, Image,
-  Pencil, Search, UserPlus, Smile,
+  Pencil, Search, UserPlus, Smile, QrCode,
 } from "lucide-react";
 import CodeSurpriseEditor from "@/components/CodeSurpriseEditor";
 import { useLocation, useNavigate } from "react-router-dom";
