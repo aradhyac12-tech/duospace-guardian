@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       .eq("token_hash", tokenHash)
       .is("redeemed_at", null)
       .gt("expires_at", new Date().toISOString())
-      .select("user_id")
+      .select("user_id, token_type")
       .maybeSingle();
 
     if (updErr) {
@@ -93,6 +93,24 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "Token invalid, expired, or already used" }),
         {
           status: 410,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    // Branch on token_type. signup_invite: don't mint a session — signal the
+    // scanning device to run the normal signup form. The inviter_id is returned
+    // so the client (or a future edge fn) can auto-link the new account to the
+    // inviter's partner-invite system if desired.
+    const tokenType = (redeemedRow as { token_type?: string }).token_type ?? "device_pairing";
+    if (tokenType === "signup_invite") {
+      return new Response(
+        JSON.stringify({
+          kind: "signup_invite",
+          inviter_id: redeemedRow.user_id,
+        }),
+        {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
