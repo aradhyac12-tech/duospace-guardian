@@ -12,9 +12,17 @@ import { Button } from "@/components/ui/button";
 
 interface QRSignInDisplayProps {
   onClose?: () => void;
+  /**
+   * device_pairing — the default. QR mints a session for the authed user on the
+   *                  scanning device.
+   * signup_invite  — QR routes the scanning (unauthed) device into the Sign Up
+   *                  tab of the Auth screen. The scanning user creates their
+   *                  own account via the normal supabase.auth.signUp flow.
+   */
+  mode?: "device_pairing" | "signup_invite";
 }
 
-const QRSignInDisplay = ({ onClose }: QRSignInDisplayProps) => {
+const QRSignInDisplay = ({ onClose, mode = "device_pairing" }: QRSignInDisplayProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +35,7 @@ const QRSignInDisplay = ({ onClose }: QRSignInDisplayProps) => {
     try {
       const { data, error: fnErr } = await supabase.functions.invoke(
         "issue-qr-token",
-        { body: {} },
+        { body: { token_type: mode } },
       );
       if (fnErr) throw new Error(fnErr.message);
       if (!data?.token) throw new Error("No token returned");
