@@ -417,6 +417,33 @@ const Settings = () => {
           )}
         </section>
 
+        {/* Devices — QR sign-in on another device + QR-based signup invite */}
+        {user && (
+          <section hidden={!matches("device qr scan sign in on another new account invite signup pair pairing")}>
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2.5 sticky top-[112px] z-10 bg-background/85 backdrop-blur-sm py-1 -mx-1 px-1 rounded">Devices</p>
+            <div className="space-y-2">
+              <button onClick={() => { hapticLight(); setShowDeviceQr(true); }}
+                className="w-full bg-card rounded-2xl border border-border/60 p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
+                <QrCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Sign in on another device</p>
+                  <p className="text-[11px] text-muted-foreground">Show a QR — scan from the Auth screen on your other device</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <button onClick={() => { hapticLight(); setShowInviteQr(true); }}
+                className="w-full bg-card rounded-2xl border border-border/60 p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
+                <UserPlus className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Invite a new user via QR</p>
+                  <p className="text-[11px] text-muted-foreground">Scanning routes them straight to the Sign Up screen</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+          </section>
+        )}
+
         {/* Username */}
         <section hidden={!matches("username profile handle")}>
           <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2.5 sticky top-[112px] z-10 bg-background/85 backdrop-blur-sm py-1 -mx-1 px-1 rounded">Your Username</p>
