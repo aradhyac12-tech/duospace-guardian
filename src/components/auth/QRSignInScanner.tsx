@@ -32,7 +32,7 @@ interface QRPayload {
 
 const SCANNER_ID = "duo-qr-scanner-region";
 
-const QRSignInScanner = ({ onClose, onSuccess }: QRSignInScannerProps) => {
+const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScannerProps) => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [status, setStatus] = useState<"starting" | "scanning" | "redeeming" | "error">("starting");
   const [error, setError] = useState<string | null>(null);
