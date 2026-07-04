@@ -461,7 +461,7 @@ const Auth = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs value={authTab} onValueChange={(v) => setAuthTab(v as "login" | "signup")} className="w-full">
           <TabsList className="w-full bg-muted/50 rounded-xl h-10">
             <TabsTrigger value="login" className="flex-1 rounded-lg text-xs">Sign In</TabsTrigger>
             <TabsTrigger value="signup" className="flex-1 rounded-lg text-xs">Sign Up</TabsTrigger>
