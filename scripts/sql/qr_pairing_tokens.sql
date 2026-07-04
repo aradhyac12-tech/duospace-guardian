@@ -12,8 +12,17 @@
 
 create table if not exists public.qr_pairing_tokens (
   id            uuid primary key default gen_random_uuid(),
+  -- For device_pairing tokens: the already-authenticated user granting sign-in
+  --   to a second device. Required.
+  -- For signup_invite tokens: the user who *issued* the invite (inviter).
+  --   Required — signup_invite QRs are always minted by an authed user.
   user_id       uuid not null references auth.users(id) on delete cascade,
   token_hash    text not null unique,
+  -- 'device_pairing' → redeem mints a session for user_id (existing behavior).
+  -- 'signup_invite'  → redeem returns { kind:'signup_invite', inviter_id }
+  --                   and the scanning device must run the normal signup flow.
+  token_type    text not null default 'device_pairing'
+                check (token_type in ('device_pairing','signup_invite')),
   created_at    timestamptz not null default now(),
   expires_at    timestamptz not null,
   redeemed_at   timestamptz,
@@ -22,6 +31,19 @@ create table if not exists public.qr_pairing_tokens (
   issuer_ip     text,
   issuer_ua     text
 );
+
+-- Idempotent add for existing deployments that predate token_type.
+alter table public.qr_pairing_tokens
+  add column if not exists token_type text not null default 'device_pairing';
+do $$ begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'qr_pairing_tokens_token_type_check'
+  ) then
+    alter table public.qr_pairing_tokens
+      add constraint qr_pairing_tokens_token_type_check
+      check (token_type in ('device_pairing','signup_invite'));
+  end if;
+end $$;
 
 create index if not exists qr_pairing_tokens_user_idx
   on public.qr_pairing_tokens (user_id, created_at desc);
