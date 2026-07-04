@@ -882,6 +882,26 @@ const Settings = () => {
 
       <ThemeStudio open={showThemeStudio} onOpenChange={setShowThemeStudio} />
       <PeekConfigDialog open={showPeekConfig} onClose={() => setShowPeekConfig(false)} />
+
+      <Dialog open={showDeviceQr} onOpenChange={setShowDeviceQr}>
+        <DialogContent className="rounded-2xl max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle className="text-base">Sign in on another device</DialogTitle>
+            <DialogDescription>Open the Auth screen on your other device, tap “Sign in with QR”, and scan this code.</DialogDescription>
+          </DialogHeader>
+          {showDeviceQr && <QRSignInDisplay mode="device_pairing" onClose={() => setShowDeviceQr(false)} />}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showInviteQr} onOpenChange={setShowInviteQr}>
+        <DialogContent className="rounded-2xl max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle className="text-base">Invite a new user</DialogTitle>
+            <DialogDescription>They open the Auth screen, tap “Sign in with QR”, scan this — they’ll land on the Sign Up form.</DialogDescription>
+          </DialogHeader>
+          {showInviteQr && <QRSignInDisplay mode="signup_invite" onClose={() => setShowInviteQr(false)} />}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
