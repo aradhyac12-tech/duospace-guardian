@@ -57,6 +57,8 @@ const Settings = () => {
   const [showPartnerDialog, setShowPartnerDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog]   = useState(false);
   const [showPeekConfig, setShowPeekConfig]       = useState(false);
+  const [showDeviceQr, setShowDeviceQr]           = useState(false);
+  const [showInviteQr, setShowInviteQr]           = useState(false);
   const [inviteCode, setInviteCode]               = useState("");
   const [joinCode, setJoinCode]                   = useState("");
   const [currentPartner, setCurrentPartner]       = useState<string|null>(null);
