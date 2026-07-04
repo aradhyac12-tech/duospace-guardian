@@ -14,6 +14,13 @@ import { logInfo, logError, newTraceId } from "@/lib/telemetry";
 interface QRSignInScannerProps {
   onClose: () => void;
   onSuccess?: () => void;
+  /**
+   * Called when the scanned QR was a signup_invite (not a device_pairing).
+   * The Auth page uses this to switch to the Sign Up tab and stash the
+   * inviter_id so the newly-created account can be linked to the inviter
+   * downstream (partner link, etc). No session is issued in this branch.
+   */
+  onSignupInvite?: (inviterId: string) => void;
 }
 
 interface QRPayload {
