@@ -926,6 +926,23 @@ const Settings = () => {
           {showInviteQr && <QRSignInDisplay mode="signup_invite" onClose={() => setShowInviteQr(false)} />}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showPasskeyDialog} onOpenChange={setShowPasskeyDialog}>
+        <DialogContent className="rounded-2xl max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle className="text-base">Add a passkey</DialogTitle>
+            <DialogDescription>Use your device's biometrics to sign in without a password.</DialogDescription>
+          </DialogHeader>
+          {showPasskeyDialog && (
+            <PasskeyRegister onDone={() => setShowPasskeyDialog(false)} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AddEmailPasswordDialog
+        open={showAddEmailPw}
+        onOpenChange={setShowAddEmailPw}
+      />
     </motion.div>
   );
 };
