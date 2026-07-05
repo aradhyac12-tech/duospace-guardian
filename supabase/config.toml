@@ -9,3 +9,22 @@ verify_jwt = true
 
 [functions.redeem-qr-token]
 verify_jwt = false
+
+# WebAuthn / passkeys
+[functions.webauthn-register-options]
+verify_jwt = true
+
+[functions.webauthn-register-verify]
+verify_jwt = true
+
+# Public: login-options + login-verify are called by unauthenticated devices.
+# They validate the WebAuthn challenge and credential themselves.
+[functions.webauthn-login-options]
+verify_jwt = false
+
+[functions.webauthn-login-verify]
+verify_jwt = false
+
+# QR-signed-up users adding email+password (session required).
+[functions.set-email-password]
+verify_jwt = true
