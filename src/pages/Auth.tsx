@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, QrCode } from "lucide-react";
 import QRSignInScanner from "@/components/auth/QRSignInScanner";
+import PasskeyLogin from "@/components/auth/PasskeyLogin";
 import { logInfo, logWarn, logError, newTraceId } from "@/lib/telemetry";
 
 // Structured-logging helpers for the auth surface.
@@ -451,8 +452,9 @@ const Auth = () => {
             className="w-full h-12 rounded-xl gap-3 text-sm font-medium"
           >
             <QrCode className="h-5 w-5" />
-            Sign in with QR
+            Scan QR to sign in or sign up
           </Button>
+          <PasskeyLogin email={email} />
         </div>
 
         <div className="flex items-center gap-3">
