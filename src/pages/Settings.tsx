@@ -28,6 +28,8 @@ import BackupManager from "@/components/BackupManager";
 import ThemeStudio from "@/components/ThemeStudio";
 import PeekConfigDialog from "@/components/PeekConfigDialog";
 import QRSignInDisplay from "@/components/auth/QRSignInDisplay";
+import PasskeyRegister from "@/components/auth/PasskeyRegister";
+import AddEmailPasswordDialog from "@/components/auth/AddEmailPasswordDialog";
 
 const presetWallpapers = [
   { id:"w1", style:"linear-gradient(135deg, hsl(28,15%,90%) 0%, hsl(28,20%,82%) 100%)" },
@@ -59,6 +61,8 @@ const Settings = () => {
   const [showPeekConfig, setShowPeekConfig]       = useState(false);
   const [showDeviceQr, setShowDeviceQr]           = useState(false);
   const [showInviteQr, setShowInviteQr]           = useState(false);
+  const [showPasskeyDialog, setShowPasskeyDialog] = useState(false);
+  const [showAddEmailPw, setShowAddEmailPw]       = useState(false);
   const [inviteCode, setInviteCode]               = useState("");
   const [joinCode, setJoinCode]                   = useState("");
   const [currentPartner, setCurrentPartner]       = useState<string|null>(null);
@@ -440,6 +444,26 @@ const Settings = () => {
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </button>
+              <button onClick={() => { hapticLight(); setShowPasskeyDialog(true); }}
+                className="w-full bg-card rounded-2xl border border-border/60 p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
+                <Fingerprint className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Add a passkey</p>
+                  <p className="text-[11px] text-muted-foreground">Use Face ID / Touch ID / Windows Hello to sign in</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+              {(!user.email || user.app_metadata?.provider === "qr") && (
+                <button onClick={() => { hapticLight(); setShowAddEmailPw(true); }}
+                  className="w-full bg-card rounded-2xl border border-border/60 p-4 flex items-center gap-3 active:scale-[0.98] transition-transform">
+                  <KeyRound className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Add email + password</p>
+                    <p className="text-[11px] text-muted-foreground">Verified via a 6-digit code — needed if you signed up via QR</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
             </div>
           </section>
         )}
