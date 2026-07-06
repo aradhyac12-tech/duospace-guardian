@@ -55,7 +55,10 @@ const LipReadingOverlay = ({ videoRef, onClose }: LipReadingOverlayProps) => {
     }
   }, [lines, currentWord, collapsed]);
 
-  const toggleActive = () => { isActive ? stop() : start(); };
+  const toggleActive = () => {
+    if (isActive) stop();
+    else start();
+  };
 
   const handleClear = () => {
     clearTranscript();

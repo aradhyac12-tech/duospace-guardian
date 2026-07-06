@@ -61,7 +61,6 @@ const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScanner
       mountedRef.current = false;
       void stopAndClear();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startScanner = async () => {

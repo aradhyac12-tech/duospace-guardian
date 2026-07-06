@@ -517,7 +517,7 @@ export const buildSurpriseDocument = ({ title, html_content, css_content, js_con
               message: error instanceof Error ? error.message : String(error),
             }, "*");
           }
-        <\/script>
+        </scr${""}ipt>
       </body>
     </html>
   `;
