@@ -474,7 +474,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     if (!appSettings.privacyMode) return;
     const blur = () => { document.body.style.filter = "blur(20px)"; document.body.style.transition = "filter 0.15s ease"; };
     const unblur = () => { document.body.style.filter = ""; };
-    const onVisibility = () => { document.hidden ? blur() : unblur(); };
+    const onVisibility = () => {
+      if (document.hidden) blur();
+      else unblur();
+    };
     window.addEventListener("blur", blur);
     window.addEventListener("focus", unblur);
     document.addEventListener("visibilitychange", onVisibility);

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
-import { Loader2 } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
+import { Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -30,64 +30,76 @@ interface QRPayload {
   exp: string;
 }
 
-const SCANNER_ID = "duo-qr-scanner-region";
-
 const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScannerProps) => {
+  const reactId = useId().replace(/:/g, "");
+  const scannerId = `duo-qr-scanner-${reactId}`;
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const [status, setStatus] = useState<"starting" | "scanning" | "redeeming" | "error">("starting");
+  const mountedRef = useRef(true);
+  const [status, setStatus] = useState<"idle" | "starting" | "scanning" | "redeeming" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const redeemingRef = useRef(false);
   const { toast } = useToast();
 
+  const stopAndClear = async () => {
+    const s = scannerRef.current;
+    scannerRef.current = null;
+    if (!s) return;
+    try {
+      const state = s.getState();
+      if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+        await s.stop();
+      }
+    } catch {
+      // The library throws if stop is called during startup or after camera teardown.
+    }
+    try { s.clear(); } catch { /* no-op */ }
+  };
+
   useEffect(() => {
-    let cancelled = false;
-
-    const start = async () => {
-      try {
-        const instance = new Html5Qrcode(SCANNER_ID, { verbose: false });
-        scannerRef.current = instance;
-
-        await instance.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 240, height: 240 },
-            aspectRatio: 1.0,
-          },
-          (decodedText) => {
-            if (redeemingRef.current) return;
-            handleDecoded(decodedText);
-          },
-          () => {
-            // per-frame decode failures are noisy; ignore
-          },
-        );
-        if (!cancelled) setStatus("scanning");
-      } catch (e) {
-        if (cancelled) return;
-        setStatus("error");
-        setError(
-          e instanceof Error
-            ? e.message
-            : "Couldn't start camera. Grant camera access and try again.",
-        );
-      }
-    };
-
-    start();
-
+    mountedRef.current = true;
     return () => {
-      cancelled = true;
-      const s = scannerRef.current;
-      if (s) {
-        s.stop().catch(() => {}).finally(() => {
-          s.clear();
-          scannerRef.current = null;
-        });
-      }
+      mountedRef.current = false;
+      void stopAndClear();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const startScanner = async () => {
+    if (status === "starting" || status === "scanning" || status === "redeeming") return;
+    redeemingRef.current = false;
+    setError(null);
+    setStatus("starting");
+    await stopAndClear();
+    try {
+      const instance = new Html5Qrcode(scannerId, { verbose: false });
+      scannerRef.current = instance;
+
+      await instance.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 240, height: 240 },
+          aspectRatio: 1.0,
+        },
+        (decodedText) => {
+          if (redeemingRef.current) return;
+          handleDecoded(decodedText);
+        },
+        () => {
+          // per-frame decode failures are noisy; ignore
+        },
+      );
+      if (mountedRef.current) setStatus("scanning");
+    } catch (e) {
+      await stopAndClear();
+      if (!mountedRef.current) return;
+      setStatus("error");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Couldn't start camera. Grant camera access and try again.",
+      );
+    }
+  };
 
   const handleDecoded = async (text: string) => {
     let parsed: QRPayload | null = null;
@@ -108,7 +120,7 @@ const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScanner
 
     try {
       // Stop the camera before network + navigation.
-      await scannerRef.current?.stop().catch(() => {});
+      await stopAndClear();
 
       const { data, error: fnErr } = await supabase.functions.invoke(
         "redeem-qr-token",
@@ -156,13 +168,23 @@ const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScanner
 
   return (
     <div className="flex flex-col items-center gap-3 py-2">
-      <div className="relative w-full max-w-[280px] aspect-square rounded-2xl overflow-hidden bg-black">
-        <div id={SCANNER_ID} className="w-full h-full" />
+      <div className="relative w-full max-w-[280px] aspect-square rounded-2xl overflow-hidden bg-muted">
+        <div id={scannerId} className="w-full h-full" />
+        {status === "idle" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+            <div className="flex flex-col items-center gap-3 px-6 text-center">
+              <Camera className="h-8 w-8 text-muted-foreground" />
+              <Button size="sm" onClick={startScanner} className="rounded-full">
+                Start camera
+              </Button>
+            </div>
+          </div>
+        )}
         {(status === "starting" || status === "redeeming") && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+          <div className="absolute inset-0 flex items-center justify-center bg-foreground/70">
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-6 w-6 animate-spin text-white" />
-              <span className="text-xs text-white/80">
+              <Loader2 className="h-6 w-6 animate-spin text-background" />
+              <span className="text-xs text-background/80">
                 {status === "starting" ? "Starting camera..." : "Signing you in..."}
               </span>
             </div>
@@ -176,7 +198,12 @@ const QRSignInScanner = ({ onClose, onSuccess, onSignupInvite }: QRSignInScanner
         </p>
       )}
       {error && (
-        <p className="text-xs text-destructive text-center max-w-[280px]">{error}</p>
+        <div className="space-y-2 text-center">
+          <p className="text-xs text-destructive max-w-[280px]">{error}</p>
+          <Button size="sm" variant="outline" onClick={startScanner}>
+            Try again
+          </Button>
+        </div>
       )}
 
       <Button size="sm" variant="ghost" onClick={onClose}>

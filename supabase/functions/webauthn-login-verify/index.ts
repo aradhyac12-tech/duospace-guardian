@@ -3,7 +3,7 @@
 // via admin.generateLink({type:'magiclink'}) + verifyOtp — same pattern as
 // redeem-qr-token. Returns { access_token, refresh_token }.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { verifyAuthenticationResponse } from "npm:@simplewebauthn/server@10.0.1";
+import { verifyAuthenticationResponse } from "npm:@simplewebauthn/server@13.3.0";
 import { corsHeaders } from "../_shared/cors.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
 

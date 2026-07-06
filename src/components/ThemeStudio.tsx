@@ -98,7 +98,7 @@ const ThemeStudio = ({ open, onOpenChange }: Props) => {
     toast({ title: "Theme saved & applied" });
   };
 
-  const usePreset = (p: typeof PRESETS[number]) => {
+  const applyPreset = (p: typeof PRESETS[number]) => {
     const t: CustomTheme = { ...p, id: `p_${p.name.replace(/\s/g, "_")}`, createdAt: Date.now() };
     saveCustomTheme(t);
     setThemes(listCustomThemes());
@@ -168,7 +168,7 @@ const ThemeStudio = ({ open, onOpenChange }: Props) => {
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Presets</p>
           <div className="grid grid-cols-4 gap-2">
             {PRESETS.map(p => (
-              <button key={p.name} onClick={() => usePreset(p)}
+              <button key={p.name} onClick={() => applyPreset(p)}
                 className="h-14 rounded-xl border border-border/60 active:scale-95 transition-transform overflow-hidden relative"
                 style={{ background: p.gradient
                   ? `linear-gradient(135deg, hsl(${p.gradient.from}), hsl(${p.gradient.to}))`

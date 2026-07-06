@@ -1,7 +1,7 @@
 // Edge function: webauthn-register-verify
 // Auth: signed-in user. Verifies attestation and stores the new credential.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { verifyRegistrationResponse } from "npm:@simplewebauthn/server@10.0.1";
+import { verifyRegistrationResponse } from "npm:@simplewebauthn/server@13.3.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     }
 
     const info = verification.registrationInfo;
-    const credId = base64UrlEncode(info.credential.id);
+    const credId = toBase64Url(info.credential.id);
     const pubKey = base64UrlEncode(info.credential.publicKey);
 
     const { error: insErr } = await admin.from("webauthn_credentials").insert({
@@ -66,8 +66,9 @@ Deno.serve(async (req) => {
       credential_id: credId,
       public_key: pubKey,
       counter: info.credential.counter,
-      transports: (body.response as { response?: { transports?: string[] } })
-        ?.response?.transports ?? [],
+      transports: info.credential.transports
+        ?? (body.response as { response?: { transports?: string[] } })?.response?.transports
+        ?? [],
       device_name: body.device_name ?? null,
       aaguid: info.aaguid ?? null,
     });
@@ -96,4 +97,8 @@ function base64UrlEncode(buf: Uint8Array | ArrayBuffer): string {
   let bin = "";
   for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function toBase64Url(value: string | Uint8Array | ArrayBuffer): string {
+  return typeof value === "string" ? value : base64UrlEncode(value);
 }
