@@ -93,18 +93,18 @@ const QRSignInDisplay = ({ onClose, mode = "device_pairing" }: QRSignInDisplayPr
 
   return (
     <div className="flex flex-col items-center gap-4 py-4">
-      <div className="rounded-2xl bg-white p-4 shadow-sm border border-border">
-        {loading && !expiresAt ? (
-          <div className="w-[240px] h-[240px] flex items-center justify-center">
+      <div className="relative rounded-2xl bg-white p-4 shadow-sm border border-border">
+        <canvas
+          ref={canvasRef}
+          width={240}
+          height={240}
+          aria-label="Sign-in QR code"
+          className={loading && !expiresAt ? "opacity-0" : "opacity-100"}
+        />
+        {loading && !expiresAt && (
+          <div className="absolute inset-4 flex items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : (
-          <canvas
-            ref={canvasRef}
-            width={240}
-            height={240}
-            aria-label="Sign-in QR code"
-          />
         )}
       </div>
       {error ? (

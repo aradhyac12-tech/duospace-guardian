@@ -2,7 +2,7 @@
 // Auth: signed-in user. Returns PublicKeyCredentialCreationOptionsJSON for
 // registering a new passkey.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { generateRegistrationOptions } from "npm:@simplewebauthn/server@10.0.1";
+import { generateRegistrationOptions } from "npm:@simplewebauthn/server@13.3.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -41,7 +41,8 @@ Deno.serve(async (req) => {
       userDisplayName: (user.user_metadata?.full_name as string) ?? user.email ?? "DuoSpace user",
       attestationType: "none",
       authenticatorSelection: {
-        residentKey: "preferred",
+        residentKey: "required",
+        requireResidentKey: true,
         userVerification: "preferred",
       },
       excludeCredentials: (existing ?? []).map((c) => ({

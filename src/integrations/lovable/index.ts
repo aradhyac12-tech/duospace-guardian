@@ -9,6 +9,18 @@ type SignInOptions = {
   extraParams?: Record<string, string>;
 };
 
+const errorMessage = (error: unknown) => {
+  if (!error) return "";
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && "message" in error) {
+    return String((error as { message?: unknown }).message ?? error);
+  }
+  return String(error);
+};
+
+const isUnsupportedManagedProvider = (error: unknown) =>
+  /provider ['"]?(google|apple)['"]? is not supported|provider.*not supported/i.test(errorMessage(error));
+
 export const lovable = {
   auth: {
     signInWithOAuth: async (provider: "google" | "apple", opts?: SignInOptions) => {
@@ -23,8 +35,26 @@ export const lovable = {
         return result;
       }
 
-      if (result.error) {
+      if (result.error && !isUnsupportedManagedProvider(result.error)) {
         return result;
+      }
+
+      if (result.error && isUnsupportedManagedProvider(result.error)) {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: opts?.redirect_uri,
+            queryParams: opts?.extraParams,
+            skipBrowserRedirect: false,
+          },
+        });
+
+        if (error) return { error };
+        if (data?.url) {
+          window.location.assign(data.url);
+          return { redirected: true };
+        }
+        return { error: new Error("OAuth redirect URL was not returned") };
       }
 
       try {

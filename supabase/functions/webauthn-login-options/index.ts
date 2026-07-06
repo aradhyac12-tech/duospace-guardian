@@ -3,7 +3,7 @@
 // If email is omitted, uses a discoverable-credential (usernameless) flow —
 // the browser lets the user pick which passkey to use.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { generateAuthenticationOptions } from "npm:@simplewebauthn/server@10.0.1";
+import { generateAuthenticationOptions } from "npm:@simplewebauthn/server@13.3.0";
 import { corsHeaders } from "../_shared/cors.ts";
 import { consumeRateLimit } from "../_shared/rateLimit.ts";
 
