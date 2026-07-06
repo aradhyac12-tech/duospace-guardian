@@ -312,13 +312,14 @@ const Auth = () => {
         redirect_uri: redirectUri,
         extraParams: { prompt: "select_account" },
       });
-      if (result?.error) {
+      const oauthResult = result as { error?: unknown; redirected?: boolean };
+      if (oauthResult.error) {
         logError("auth.oauth", "initiate failed", {
           request_id: traceId, provider: "google", redirect_uri: redirectUri,
-          status: "error", err: supaErr(result.error),
+          status: "error", err: supaErr(oauthResult.error),
         }, traceId);
-        toast({ title: "Google sign-in failed", description: readableError(result.error), variant: "destructive" });
-      } else if ((result as { redirected?: boolean })?.redirected) {
+        toast({ title: "Google sign-in failed", description: readableError(oauthResult.error), variant: "destructive" });
+      } else if (oauthResult.redirected) {
         logInfo("auth.oauth", "redirected to provider", {
           request_id: traceId, provider: "google", status: "redirected", redirect_uri: redirectUri,
         }, traceId);
@@ -349,13 +350,14 @@ const Auth = () => {
       const result = await lovable.auth.signInWithOAuth("apple", {
         redirect_uri: redirectUri,
       });
-      if (result?.error) {
+      const oauthResult = result as { error?: unknown; redirected?: boolean };
+      if (oauthResult.error) {
         logError("auth.oauth", "initiate failed", {
           request_id: traceId, provider: "apple", redirect_uri: redirectUri,
-          status: "error", err: supaErr(result.error),
+          status: "error", err: supaErr(oauthResult.error),
         }, traceId);
-        toast({ title: "Apple sign-in failed", description: readableError(result.error), variant: "destructive" });
-      } else if ((result as { redirected?: boolean })?.redirected) {
+        toast({ title: "Apple sign-in failed", description: readableError(oauthResult.error), variant: "destructive" });
+      } else if (oauthResult.redirected) {
         logInfo("auth.oauth", "redirected to provider", {
           request_id: traceId, provider: "apple", status: "redirected", redirect_uri: redirectUri,
         }, traceId);
