@@ -194,9 +194,43 @@ export type Database = {
         }
         Relationships: []
       }
+      email_change_otps: {
+        Row: {
+          attempts: number
+          consumed_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          otp_hash: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          consumed_at?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          otp_hash: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          consumed_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          otp_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gallery_items: {
         Row: {
           created_at: string
+          file_name: string | null
           file_type: string
           file_url: string
           id: string
@@ -205,6 +239,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          file_name?: string | null
           file_type?: string
           file_url: string
           id?: string
@@ -213,6 +248,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          file_name?: string | null
           file_type?: string
           file_url?: string
           id?: string
@@ -446,15 +482,7 @@ export type Database = {
           reply_to_id?: string | null
           sender_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "messages_reply_to_id_fkey"
-            columns: ["reply_to_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       mood_logs: {
         Row: {
@@ -526,9 +554,10 @@ export type Database = {
           created_at: string
           id: string
           object_path: string
-          total_bytes: number
+          total_bytes: number | null
           total_chunks: number
           updated_at: string
+          uploaded_chunks: number
           user_id: string
         }
         Insert: {
@@ -537,9 +566,10 @@ export type Database = {
           created_at?: string
           id?: string
           object_path: string
-          total_bytes: number
+          total_bytes?: number | null
           total_chunks: number
           updated_at?: string
+          uploaded_chunks?: number
           user_id: string
         }
         Update: {
@@ -548,9 +578,10 @@ export type Database = {
           created_at?: string
           id?: string
           object_path?: string
-          total_bytes?: number
+          total_bytes?: number | null
           total_chunks?: number
           updated_at?: string
+          uploaded_chunks?: number
           user_id?: string
         }
         Relationships: []
@@ -669,6 +700,48 @@ export type Database = {
         }
         Relationships: []
       }
+      qr_pairing_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          issuer_ip: string | null
+          issuer_ua: string | null
+          redeemed_at: string | null
+          redeemed_ip: string | null
+          redeemed_ua: string | null
+          token_hash: string
+          token_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          issuer_ip?: string | null
+          issuer_ua?: string | null
+          redeemed_at?: string | null
+          redeemed_ip?: string | null
+          redeemed_ua?: string | null
+          token_hash: string
+          token_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          issuer_ip?: string | null
+          issuer_ua?: string | null
+          redeemed_at?: string | null
+          redeemed_ip?: string | null
+          redeemed_ua?: string | null
+          token_hash?: string
+          token_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           bucket: string
@@ -780,6 +853,75 @@ export type Database = {
         }
         Relationships: []
       }
+      webauthn_challenges: {
+        Row: {
+          challenge: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          user_id: string | null
+        }
+        Insert: {
+          challenge: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          kind: string
+          user_id?: string | null
+        }
+        Update: {
+          challenge?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      webauthn_credentials: {
+        Row: {
+          aaguid: string | null
+          counter: number
+          created_at: string
+          credential_id: string
+          device_name: string | null
+          id: string
+          last_used_at: string | null
+          public_key: string
+          transports: string[]
+          user_id: string
+        }
+        Insert: {
+          aaguid?: string | null
+          counter?: number
+          created_at?: string
+          credential_id: string
+          device_name?: string | null
+          id?: string
+          last_used_at?: string | null
+          public_key: string
+          transports?: string[]
+          user_id: string
+        }
+        Update: {
+          aaguid?: string | null
+          counter?: number
+          created_at?: string
+          credential_id?: string
+          device_name?: string | null
+          id?: string
+          last_used_at?: string | null
+          public_key?: string
+          transports?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -792,6 +934,10 @@ export type Database = {
       accept_partner_request: {
         Args: { p_request_id: string; p_user_id: string }
         Returns: undefined
+      }
+      accept_partner_request_v2: {
+        Args: { accepting_user_id: string; request_id: string }
+        Returns: Json
       }
       claim_pending_scheduled_messages: {
         Args: never
@@ -825,7 +971,9 @@ export type Database = {
         Returns: boolean
       }
       delete_expired_messages: { Args: never; Returns: undefined }
+      email_change_otps_gc: { Args: never; Returns: undefined }
       get_partner_id: { Args: { _user_id: string }; Returns: string }
+      qr_pairing_tokens_gc: { Args: never; Returns: undefined }
       search_users: {
         Args: { search_term: string }
         Returns: {
@@ -836,6 +984,7 @@ export type Database = {
         }[]
       }
       unlink_partner: { Args: { p_user_id: string }; Returns: undefined }
+      webauthn_challenges_gc: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
