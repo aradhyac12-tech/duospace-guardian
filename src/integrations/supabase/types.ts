@@ -550,9 +550,11 @@ export type Database = {
       pending_uploads: {
         Row: {
           bucket: string
+          content_type: string | null
           created_at: string
           id: string
           object_path: string
+          total_bytes: number | null
           total_chunks: number
           updated_at: string
           uploaded_chunks: number
@@ -560,9 +562,11 @@ export type Database = {
         }
         Insert: {
           bucket: string
+          content_type?: string | null
           created_at?: string
           id?: string
           object_path: string
+          total_bytes?: number | null
           total_chunks: number
           updated_at?: string
           uploaded_chunks?: number
@@ -570,9 +574,11 @@ export type Database = {
         }
         Update: {
           bucket?: string
+          content_type?: string | null
           created_at?: string
           id?: string
           object_path?: string
+          total_bytes?: number | null
           total_chunks?: number
           updated_at?: string
           uploaded_chunks?: number
