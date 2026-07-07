@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, QrCode } from "lucide-react";
 import QRSignInScanner from "@/components/auth/QRSignInScanner";
+import QRSignInDisplay from "@/components/auth/QRSignInDisplay";
 import PasskeyLogin from "@/components/auth/PasskeyLogin";
 import { logInfo, logWarn, logError, newTraceId } from "@/lib/telemetry";
 
@@ -50,6 +51,7 @@ const Auth = () => {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [oauthProcessing, setOauthProcessing] = useState(false);
   const [showQrScanner, setShowQrScanner] = useState(false);
+  const [qrPanel, setQrPanel] = useState<"scan" | "display">("scan");
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const { toast } = useToast();
 
@@ -302,7 +304,7 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     const traceId = newTraceId("oauth_google");
     setGoogleLoading(true);
-    const redirectUri = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    const redirectUri = window.location.origin;
     logInfo("auth.oauth", "initiate", {
       request_id: traceId, provider: "google",
       origin: window.location.origin, redirect_uri: redirectUri,
@@ -341,7 +343,7 @@ const Auth = () => {
   const handleAppleLogin = async () => {
     const traceId = newTraceId("oauth_apple");
     setAppleLoading(true);
-    const redirectUri = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    const redirectUri = window.location.origin;
     logInfo("auth.oauth", "initiate", {
       request_id: traceId, provider: "apple",
       origin: window.location.origin, redirect_uri: redirectUri,
@@ -476,12 +478,12 @@ const Auth = () => {
             Continue with Apple
           </Button>
           <Button
-            onClick={() => setShowQrScanner(true)}
+            onClick={() => { setQrPanel("scan"); setShowQrScanner(true); }}
             variant="outline"
             className="w-full h-12 rounded-xl gap-3 text-sm font-medium"
           >
             <QrCode className="h-5 w-5" />
-            Scan QR to sign in or sign up
+            Sign in with QR
           </Button>
           <PasskeyLogin email={email} />
         </div>
@@ -557,24 +559,32 @@ const Auth = () => {
             <DialogTitle>Sign in with QR</DialogTitle>
           </DialogHeader>
           {showQrScanner && (
-            <QRSignInScanner
-              onClose={() => setShowQrScanner(false)}
-              onSuccess={() => setShowQrScanner(false)}
-              onSignupInvite={(inviterId) => {
-                // Signup-invite QR: stash inviter for downstream partner-link
-                // wiring (same key-space as the existing invite flow so the
-                // rest of the app doesn't need to know about QR at all).
-                if (inviterId) {
-                  sessionStorage.setItem("duo-pending-qr-inviter", inviterId);
-                }
-                setAuthTab("signup");
-                setShowQrScanner(false);
-                toast({
-                  title: "Create your account",
-                  description: "Fill in your details to finish signup.",
-                });
-              }}
-            />
+            <Tabs value={qrPanel} onValueChange={(v) => setQrPanel(v as "scan" | "display")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted/50">
+                <TabsTrigger value="scan" className="rounded-lg text-xs">Scan a QR</TabsTrigger>
+                <TabsTrigger value="display" className="rounded-lg text-xs">Show my QR</TabsTrigger>
+              </TabsList>
+              <TabsContent value="scan" className="mt-4">
+                <QRSignInScanner
+                  onClose={() => setShowQrScanner(false)}
+                  onSuccess={() => setShowQrScanner(false)}
+                  onSignupInvite={(inviterId) => {
+                    if (inviterId) {
+                      sessionStorage.setItem("duo-pending-qr-inviter", inviterId);
+                    }
+                    setAuthTab("signup");
+                    setShowQrScanner(false);
+                    toast({
+                      title: "Create your account",
+                      description: "Fill in your details to finish signup.",
+                    });
+                  }}
+                />
+              </TabsContent>
+              <TabsContent value="display" className="mt-4">
+                <QRSignInDisplay mode="signup_invite" onClose={() => setShowQrScanner(false)} />
+              </TabsContent>
+            </Tabs>
           )}
         </DialogContent>
       </Dialog>
